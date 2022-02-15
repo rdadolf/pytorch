@@ -1,12 +1,25 @@
 #include <onnx/onnx_pb.h>
+#include <torch/csrc/jit/passes/onnx/function_extraction.h>
 #include <torch/csrc/onnx/init.h>
 #include <torch/csrc/onnx/onnx.h>
 #include <torch/version.h>
 
 namespace torch {
 namespace onnx {
+
+using namespace torch::jit;
+
 void initONNXBindings(PyObject* module) {
   auto m = py::handle(module).cast<py::module>();
+
+  m.def(
+      "_jit_pass_onnx_clear_scope_records",
+      &torch::jit::onnx::ONNXClearScopeRecords)
+      .def(
+        "_jit_pass_onnx_track_scope_attributes",
+        &torch::jit::onnx::ONNXTrackScopeAttributes
+      );
+
   auto onnx = m.def_submodule("_onnx");
   py::enum_<::ONNX_NAMESPACE::TensorProto_DataType>(onnx, "TensorProtoDataType")
       .value("UNDEFINED", ::ONNX_NAMESPACE::TensorProto_DataType_UNDEFINED)
