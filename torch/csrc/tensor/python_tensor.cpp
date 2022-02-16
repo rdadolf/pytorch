@@ -277,6 +277,9 @@ static THPObjectPtr get_tensor_dict() {
 static std::vector<PyTensorType*> tensor_types;
 
 void set_default_tensor_type(PyTensorType* type) {
+  // Make sure this is not a null pointer before accessing it.
+  TORCH_INTERNAL_ASSERT(type, "Invalid default tensor dtype");
+
   if (!at::isFloatingType(type->get_scalar_type())) {
     throw TypeError("only floating-point types are supported as the default type");
   }
@@ -405,6 +408,8 @@ void py_set_default_dtype(PyObject* obj) {
       [backend, scalar_type](PyTensorType *x) {
         return x->get_backend() == backend && x->get_scalar_type() == scalar_type;
       });
+    // Make sure the iterator is valid before dereferencing it.
+    TORCH_INTERNAL_ASSERT(it != tensor_types.end(), "tensor dtype not found");
     set_default_tensor_type(*it);
   } else {
     throw TypeError("invalid dtype object");
